@@ -9,6 +9,7 @@ import { CertificateModule } from './certificate/certificate.module';
 import { ProjectsModule } from './projects/projects.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { AuthModule } from './_auth/auth.module';
 
 @Module({
   imports: [ConfigModule.forRoot({ isGlobal: true }),
@@ -50,7 +51,7 @@ if (databaseUrl) {
     uuidExtension: 'pgcrypto',
   };
 },
-    }), UserModule, EventModule, RegistrationModule, SpeakerModule, CertificateModule, ProjectsModule],
+    }), UserModule, EventModule, RegistrationModule, SpeakerModule, CertificateModule, ProjectsModule, AuthModule],
   controllers: [AppController],
   providers: [AppService],
 })

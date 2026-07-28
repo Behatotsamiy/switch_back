@@ -25,8 +25,8 @@ export class User {
   @Column({ unique: true })
   email: string;
 
-  @Column()
-  password: string; // хранится хэш, не plain text
+  @Column({ select: false }) // не подтягивается в обычных find(), только явным select
+  password: string;
 
   @Column()
   firstName: string;
@@ -37,14 +37,14 @@ export class User {
   @Column({ type: 'enum', enum: UserRole, default: UserRole.MEMBER })
   role: UserRole;
 
+  @Column({ nullable: true, select: false })
+  refreshToken: string | null;
+
   @OneToMany(() => Registration, (reg) => reg.user)
   registrations: Registration[];
 
   @OneToMany(() => Certificate, (cert) => cert.user)
   certificates: Certificate[];
-  
-  @Column({ nullable: true, select: false })
-  refreshToken: string | null;
 
   @CreateDateColumn()
   createdAt: Date;
