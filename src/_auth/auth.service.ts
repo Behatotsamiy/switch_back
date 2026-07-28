@@ -21,11 +21,14 @@ export class AuthService {
   ) {}
 
   // ─── Регистрация ───────────────────────────────────────────────
-  async register(dto: CreateUserDto) {
-    // UserService.create() должен сам проставлять role: MEMBER по умолчанию,
-    // не принимая role из тела запроса
-    return this.userService.create(dto);
-  }
+async register(dto: CreateUserDto) {
+  const user = await this.userService.create(dto);
+
+  const tokens = await this.generateTokens(user.id, user.phone, user.role);
+  await this.saveRefreshToken(user.id, tokens.refreshToken);
+
+  return { user, ...tokens };
+}
 
   // ─── Логин ─────────────────────────────────────────────────────
   async login(dto: LoginDto) {
