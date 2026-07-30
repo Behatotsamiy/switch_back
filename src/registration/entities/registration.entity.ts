@@ -16,7 +16,7 @@ export enum RegistrationStatus {
 }
 
 @Entity('registrations')
-@Unique(['user', 'event']) // нельзя записаться на один event дважды
+@Unique(['user', 'event'])
 export class Registration {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -39,7 +39,10 @@ export class Registration {
   status: RegistrationStatus;
 
   @Column({ default: false })
-  attended: boolean; // отметка о посещении — важно для генерации сертификатов
+  attended: boolean;
+
+  @Column({ unique: true })
+  ticketNumber: string; // например SW-TCK-A1B2C3 — то, что кодируется в QR
 
   @CreateDateColumn()
   createdAt: Date;
