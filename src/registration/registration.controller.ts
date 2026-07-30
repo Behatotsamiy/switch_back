@@ -7,11 +7,14 @@ import {
   Patch,
   UseGuards,
   Req,
+  Res,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { RegistrationService } from './registration.service';
 import { CreateRegistrationDto } from './dto/create-registration.dto';
 import { MarkAttendanceDto } from './dto/mark-attendance.dto';
+import { CheckInDto } from './dto/check-in.dto';
 import { JwtAuthGuard } from '../_auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../_auth/guards/roles.guard';
 import { Roles } from '../_auth/decorators/roles.decorator';
@@ -43,6 +46,21 @@ export class RegistrationController {
     return this.registrationService.findMyRegistrations(req.user.id);
   }
 
+  @Get(':id/ticket')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  getTicket(@Req() req, @Param('id') id: string) {
+    return this.registrationService.getTicketData(req.user.id, id);
+  }
+
+  @Get(':id/ticket/download')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  async downloadTicket(@Req() req, @Param('id') id: string, @Res() res: Response) {
+    const filePath = await this.registrationService.downloadTicketPdf(req.user.id, id);
+    res.download(filePath, `switch-ticket.pdf`);
+  }
+
   @Get('event/:eventId')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -57,5 +75,14 @@ export class RegistrationController {
   @Roles(UserRole.ADMIN)
   markAttendance(@Body() dto: MarkAttendanceDto) {
     return this.registrationService.markAttendance(dto.registrationId, dto.attended);
+  }
+
+  // Сканирование QR на входе — админ отмечает явку по номеру билета
+  @Post('check-in')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  checkIn(@Body() dto: CheckInDto) {
+    return this.registrationService.checkIn(dto.ticketNumber);
   }
 }
