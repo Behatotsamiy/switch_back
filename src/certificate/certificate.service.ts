@@ -32,6 +32,12 @@ export class CertificateService {
   }
 
   // вызывается из EventService.finishEvent()
+  async findAll(): Promise<Certificate[]> {
+  return this.certificateRepo.find({
+    relations: { user: true, event: true },
+    order: { issuedAt: 'DESC' },
+  });
+}
   async generateForEvent(eventId: string): Promise<void> {
     const registrations = await this.registrationRepo.find({
       where: { eventId, status: RegistrationStatus.ACTIVE, attended: true },
