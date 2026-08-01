@@ -4,6 +4,9 @@ import { Response } from 'express';
 import * as path from 'path';
 import { CertificateService } from './certificate.service';
 import { JwtAuthGuard } from '../_auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../_auth/guards/roles.guard';
+import { UserRole } from '../user/entities/user.entity';
+import { Roles } from '../_auth/decorators/roles.decorator';
 
 @ApiTags('certificates')
 @Controller('certificates')
@@ -16,7 +19,13 @@ export class CertificateController {
   findMy(@Req() req) {
     return this.certificateService.findMyCertificates(req.user.id);
   }
-
+@Get()
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(UserRole.ADMIN)
+findAll() {
+  return this.certificateService.findAll();
+}
   @Get(':id/download')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
