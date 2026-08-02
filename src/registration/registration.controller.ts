@@ -78,11 +78,11 @@ export class RegistrationController {
   }
 
   // Сканирование QR на входе — админ отмечает явку по номеру билета
-  @Post('check-in')
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
-  checkIn(@Body() dto: CheckInDto) {
-    return this.registrationService.checkIn(dto.ticketNumber);
-  }
+@Post('check-in')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(UserRole.ADMIN)
+checkIn(@Body() dto: CheckInDto) {
+  return this.registrationService.checkIn(dto.ticketNumber, dto.eventId);
+}
 }
