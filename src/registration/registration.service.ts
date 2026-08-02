@@ -180,20 +180,45 @@ export class RegistrationService {
 
   // ─── Check-in на входе (для админов) ───────────────────────────
 
-  async checkIn(ticketNumber: string): Promise<Registration> {
-    const registration = await this.registrationRepo.findOne({
-      where: { ticketNumber },
-      relations: { user: true, event: true },
-    });
-    if (!registration) throw new NotFoundException('Билет не найден');
-    if (registration.status !== RegistrationStatus.ACTIVE) {
-      throw new BadRequestException('Билет недействителен (регистрация отменена)');
-    }
-    if (registration.attended) {
-      throw new BadRequestException('По этому билету уже отмечен вход');
-    }
+async checkIn(ticketNumber: string, eventId: string): Promise<Registration> {
+  const registration = await this.registrationRepo.findOne({
+    where: { ticketNumber },
+    relations: { user: true, event: true },
+  });
+  if (!registration) throw new NotFoundException('Билет не найден — недействительный QR-код');
 
-    registration.attended = true;
-    return this.registrationRepo.save(registration);
+  // билет должен принадлежать именно тому событию, которое выбрано на check-in экране
+  if (registration.eventId !== eventId) {
+    throw new BadRequestException('Этот билет выдан на другое мероприятие');
   }
+
+  if (registration.status !== RegistrationStatus.ACTIVE) {
+    throw new BadRequestException('Билет недействителен (регистрация отменена)');
+  }
+  if (registration.attended) {
+    throw new BadRequestException('По этому билету уже отмечен вход');
+  }
+
+  const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const endOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999);
+
+  const eventStart = startOfDay(new Date(registration.event.startDate));
+  const eventEnd = registration.event.endDate
+    ? endOfDay(new Date(registration.event.endDate))
+    : endOfDay(new Date(registration.event.startDate));
+  const now = new Date();
+
+  if (now < eventStart || now > eventEnd) {
+    if (now < eventStart) {
+      const diffDays = Math.ceil((eventStart.getTime() - startOfDay(now).getTime()) / 86400000);
+      throw new BadRequestException(
+        `Check-in откроется в день мероприятия — через ${diffDays} дн.`,
+      );
+    }
+    throw new BadRequestException('Мероприятие уже завершилось — check-in закрыт');
+  }
+
+  registration.attended = true;
+  return this.registrationRepo.save(registration);
+}
 }
