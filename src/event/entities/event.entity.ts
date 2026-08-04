@@ -55,6 +55,9 @@ export class Event {
   })
   speakers: Speaker[];
 
+  @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true })
+  price: number | null; // null или 0 — бесплатное событие, оплата не требуется
+
   @OneToMany(() => Registration, (reg) => reg.event)
   registrations: Registration[];
 
