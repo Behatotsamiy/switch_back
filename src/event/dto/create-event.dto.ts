@@ -6,6 +6,7 @@ import {
   IsOptional,
   IsInt,
   Min,
+  IsNumber,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -44,4 +45,14 @@ export class CreateEventDto {
   @IsOptional()
   @IsString()
   coverImage?: string;
+
+  @ApiProperty({
+    example: 15000,
+    required: false,
+    description: 'Цена в UZS, не указывать для бесплатных событий',
+  })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  price?: number;
 }

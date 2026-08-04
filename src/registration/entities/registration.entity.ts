@@ -15,6 +15,14 @@ export enum RegistrationStatus {
   CANCELLED = 'CANCELLED',
 }
 
+export enum PaymentStatus {
+  NOT_REQUIRED = 'NOT_REQUIRED', // событие бесплатное
+  PENDING = 'PENDING',           // ждём чек/подтверждение
+  PAID = 'PAID',
+  REJECTED = 'REJECTED',         // админ отклонил (чек не подошёл)
+}
+
+
 @Entity('registrations')
 @Unique(['user', 'event'])
 export class Registration {
@@ -41,8 +49,21 @@ export class Registration {
   @Column({ default: false })
   attended: boolean;
 
+   @Column({ type: 'enum', enum: PaymentStatus, default: PaymentStatus.NOT_REQUIRED })
+  paymentStatus: PaymentStatus;
+
+  @Column({ nullable: true, unique: true })
+  orderNumber: string; // например ORDER-1042, для назначения платежа в переводе
+
+  @Column({ nullable: true })
+  receiptUrl: string; // путь к загруженному скриншоту чека
+
+  @Column({ nullable: true })
+  paymentRejectionReason: string;
+
   @Column({ unique: true })
   ticketNumber: string; // например SW-TCK-A1B2C3 — то, что кодируется в QR
+
 
   @CreateDateColumn()
   createdAt: Date;
