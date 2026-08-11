@@ -5,8 +5,7 @@ import {
   CreateDateColumn,
   OneToMany,
 } from 'typeorm';
-import { Registration } from '../../registration/entities/registration.entity';
-import { Certificate } from '../../certificate/entities/certificate.entity';
+
 
 export enum UserRole {
   GUEST = 'GUEST',
@@ -40,11 +39,7 @@ export class User {
   @Column({ nullable: true, select: false })
   refreshToken: string | null;
 
-  @OneToMany(() => Registration, (reg) => reg.user)
-  registrations: Registration[];
 
-  @OneToMany(() => Certificate, (cert) => cert.user)
-  certificates: Certificate[];
 
   @CreateDateColumn()
   createdAt: Date;
